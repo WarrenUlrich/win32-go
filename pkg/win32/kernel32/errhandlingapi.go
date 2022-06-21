@@ -9,12 +9,10 @@ import (
 	"strconv"
 )
 
-type Error struct {
-	Code int32
-}
+type ErrorCode uint32
 
-func (e Error) Error() string {
-	return "win32 error code: " + strconv.Itoa(int(e.Code))
+func (e ErrorCode) Error() string {
+	return "win32 error code: " + strconv.Itoa(int(e))
 }
 
 /*
@@ -30,5 +28,5 @@ func GetLastError() error {
 		return nil
 	}
 
-	return Error{Code: int32(err)}
+	return ErrorCode(err)
 }
