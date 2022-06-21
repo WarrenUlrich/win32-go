@@ -7,8 +7,9 @@ package kernel32
 import "C"
 
 import (
-	"github.com/warrenulrich/win32-go/pkg/win32"
 	"unsafe"
+
+	"github.com/warrenulrich/win32-go/pkg/win32"
 )
 
 type ThFlags uint32
@@ -92,22 +93,43 @@ func (pe32 ProcessEntry32) ExeFileString() string {
 	return string(pe32.ExeFile[:i])
 }
 
-
 /*
-	ModuleEntry32 describes an entry from a list of 
+	ModuleEntry32 describes an entry from a list of
 	the modules belonging to the specified process.
 */
 type ModuleEntry32 struct {
-	Size uint32
-	ModuleID uint32
-	ProcessID uint32
+	Size            uint32
+	ModuleID        uint32
+	ProcessID       uint32
 	GlobalLoadCount uint32
-	LoadCount uint32
-	BaseAddress uintptr
-	BaseSize uint32
-	ModuleHandle win32.Handle
-	ModuleName [256]byte
-	ModulePath [260]byte
+	LoadCount       uint32
+	BaseAddress     uintptr
+	BaseSize        uint32
+	ModuleHandle    win32.Handle
+	ModuleName      [256]byte
+	ModulePath      [260]byte
+}
+
+func (me32 ModuleEntry32) ModuleNameString() string {
+	var i int
+	for i = 0; i < 256; i++ {
+		if me32.ModuleName[i] == 0 {
+			break
+		}
+	}
+
+	return string(me32.ModuleName[:i])
+}
+
+func (me32 ModuleEntry32) ModulePathString() string {
+	var i int
+	for i = 0; i < 260; i++ {
+		if me32.ModulePath[i] == 0 {
+			break
+		}
+	}
+
+	return string(me32.ModulePath[:i])
 }
 
 const (
@@ -215,7 +237,7 @@ func CreateToolhelp32Snapshot(flags ThFlags, pid uint32) (win32.Handle, error) {
 }
 
 /*
-	Module32First retrieves information about 
+	Module32First retrieves information about
 	the first module associated with a process.
 */
 func Module32First(snapshot win32.Handle, me *ModuleEntry32) error {
@@ -227,7 +249,7 @@ func Module32First(snapshot win32.Handle, me *ModuleEntry32) error {
 }
 
 /*
-	Module32Next retrieves information about 
+	Module32Next retrieves information about
 	the next module associated with a process or thread.
 */
 func Module32Next(snapshot win32.Handle, me *ModuleEntry32) error {
