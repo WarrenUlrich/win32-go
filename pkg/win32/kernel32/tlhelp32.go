@@ -92,6 +92,24 @@ func (pe32 ProcessEntry32) ExeFileString() string {
 	return string(pe32.ExeFile[:i])
 }
 
+
+/*
+	ModuleEntry32 describes an entry from a list of 
+	the modules belonging to the specified process.
+*/
+type ModuleEntry32 struct {
+	Size uint32
+	ModuleID uint32
+	ProcessID uint32
+	GlobalLoadCount uint32
+	LoadCount uint32
+	BaseAddress uintptr
+	BaseSize uint32
+	ModuleHandle win32.Handle
+	ModuleName [256]byte
+	ModulePath [260]byte
+}
+
 const (
 	/*
 		TH32CS_INHERIT indicates that the snapshot handle is to be inheritable.
@@ -197,6 +215,29 @@ func CreateToolhelp32Snapshot(flags ThFlags, pid uint32) (win32.Handle, error) {
 }
 
 /*
+	Module32First retrieves information about 
+	the first module associated with a process.
+*/
+func Module32First(snapshot win32.Handle, me *ModuleEntry32) error {
+	if C.Module32First(C.HANDLE(unsafe.Pointer(snapshot)), (*C.MODULEENTRY32)(unsafe.Pointer(me))) == 0 {
+		return GetLastError()
+	}
+
+	return nil
+}
+
+/*
+	Module32Next retrieves information about 
+	the next module associated with a process or thread.
+*/
+func Module32Next(snapshot win32.Handle, me *ModuleEntry32) error {
+	if C.Module32Next(C.HANDLE(unsafe.Pointer(snapshot)), (*C.MODULEENTRY32)(unsafe.Pointer(me))) == 0 {
+		return GetLastError()
+	}
+	return nil
+}
+
+/*
 	Process32First retrieves information about the first process encountered in a system snapshot.
 
 	Returns TRUE if the first entry of the process list has been copied to the buffer or FALSE otherwise.
@@ -207,12 +248,12 @@ func CreateToolhelp32Snapshot(flags ThFlags, pid uint32) (win32.Handle, error) {
 
 	For more info, see: https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32first
 */
-func Process32First(snapShot win32.Handle, pe *ProcessEntry32) (bool, error) {
-	if C.Process32First(C.HANDLE(unsafe.Pointer(snapShot)), (*C.PROCESSENTRY32)(unsafe.Pointer(pe))) == 0 {
-		return false, GetLastError()
+func Process32First(snapshot win32.Handle, pe *ProcessEntry32) error {
+	if C.Process32First(C.HANDLE(unsafe.Pointer(snapshot)), (*C.PROCESSENTRY32)(unsafe.Pointer(pe))) == 0 {
+		return GetLastError()
 	}
 
-	return true, nil
+	return nil
 }
 
 /*
@@ -222,10 +263,10 @@ func Process32First(snapShot win32.Handle, pe *ProcessEntry32) (bool, error) {
 
 	For more info, see: https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-process32next
 */
-func Process32Next(snapShot win32.Handle, pe *ProcessEntry32) (bool, error) {
-	if C.Process32Next(C.HANDLE(unsafe.Pointer(snapShot)), (*C.PROCESSENTRY32)(unsafe.Pointer(pe))) == 0 {
-		return false, GetLastError()
+func Process32Next(snapshot win32.Handle, pe *ProcessEntry32) error {
+	if C.Process32Next(C.HANDLE(unsafe.Pointer(snapshot)), (*C.PROCESSENTRY32)(unsafe.Pointer(pe))) == 0 {
+		return GetLastError()
 	}
 
-	return true, nil
+	return nil
 }

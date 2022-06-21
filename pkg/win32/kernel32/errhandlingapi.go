@@ -27,6 +27,6 @@ func GetLastError() error {
 	if err == 0 {
 		return nil
 	}
-
-	return ErrorCode(err)
+	
+	return (ErrorCode)(err)
 }
